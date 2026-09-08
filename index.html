@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVENZO | متجر الأزياء</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}
+body{background:#080808;color:white}
+header{
+  background:#000;border-bottom:1px solid #d4af37;
+  padding:18px 6%;display:flex;justify-content:space-between;
+  align-items:center;position:sticky;top:0;z-index:10
+}
+.logo{color:#d4af37;font-size:28px;font-weight:bold;letter-spacing:4px}
+nav{display:flex;gap:10px}
+nav a,.cartBtn{
+  color:white;text-decoration:none;background:none;border:0;
+  cursor:pointer;padding:10px;font-size:15px
+}
+nav a:hover,.cartBtn:hover{color:#d4af37}
+
+.hero{
+  min-height:65vh;display:flex;align-items:center;
+  justify-content:center;text-align:center;padding:30px;
+  background:linear-gradient(#0009,#0009),
+  url("https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1600&q=80")
+  center/cover
+}
+.hero h1{font-size:clamp(50px,9vw,90px);color:#d4af37;letter-spacing:8px}
+.hero p{font-size:21px;margin:20px}
+.btn{
+  background:#d4af37;color:#000;border:0;border-radius:6px;
+  padding:13px 24px;font-weight:bold;cursor:pointer
+}
+
+.section{padding:60px 6%}
+.section h2{text-align:center;color:#d4af37;margin-bottom:35px}
+
+.products{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:22px
+}
+.product{
+ background:#111;border:1px solid #252525;border-radius:10px;
+ overflow:hidden;text-align:center;padding-bottom:20px
+}
+.product img{width:100%;height:280px;object-fit:cover}
+.product h3{margin:15px 0 8px}
+.price{color:#d4af37;font-size:20px;margin-bottom:15px}
+
+.empty{text-align:center;color:#888;padding:50px}
+
+.cart{
+ position:fixed;top:0;left:0;width:min(420px,100%);
+ height:100vh;background:#111;z-index:100;
+ padding:25px;transform:translateX(-100%);
+ transition:.3s;overflow:auto
+}
+.cart.open{transform:translateX(0)}
+.cartHead{
+ display:flex;justify-content:space-between;
+ border-bottom:1px solid #333;padding-bottom:15px;margin-bottom:20px
+}
+.close{background:none;border:0;color:white;font-size:28px;cursor:pointer}
+.item{
+ display:flex;gap:10px;background:#181818;padding:10px;
+ margin-bottom:10px;border-radius:8px
+}
+.item img{width:60px;height:60px;object-fit:cover;border-radius:5px}
+.itemInfo{flex:1}
+.itemInfo h4{margin-bottom:5px}
+.itemPrice{color:#d4af37}
+.qty{margin-top:7px;display:flex;gap:7px;align-items:center}
+.qty button{
+ width:26px;height:26px;border:0;background:#d4af37;
+ cursor:pointer;border-radius:4px
+}
+.remove{background:#8b0000!important;color:white}
+.total{
+ border-top:1px solid #333;margin-top:20px;padding-top:20px;
+ display:flex;justify-content:space-between;font-size:21px
+}
+.whatsapp{
+ width:100%;margin-top:20px;padding:15px;border:0;
+ border-radius:6px;background:#25D366;color:white;
+ font-weight:bold;font-size:16px;cursor:pointer
+}
+
+footer{
+ text-align:center;padding:30px;border-top:1px solid #222;color:#888
+}
+
+@media(max-width:600px){
+ header{padding:15px 4%}
+ .logo{font-size:23px}
+ nav a{display:none}
+ .products{grid-template-columns:repeat(2,1fr);gap:12px}
+ .product img{height:220px}
+ .product h3{font-size:15px}
+ .product .btn{padding:10px 12px;font-size:12px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">AVENZO</div>
+
+  <nav>
+    <a href="#">الرئيسية</a>
+    <a href="#products">المنتجات</a>
+
+    <button class="cartBtn" onclick="openCart()">
+      🛒 السلة (<span id="count">0</span>)
+    </button>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <h1>AVENZO</h1>
+    <p>أناقة تُعبّر عنك</p>
+    <a href="#products" class="btn">تسوق الآن</a>
+  </div>
+</section>
+
+<section class="section" id="products">
+  <h2>منتجات AVENZO</h2>
+  <div class="products" id="productsList"></div>
+</section>
+
+<div class="cart" id="cart">
+
+  <div class="cartHead">
+    <h2>🛒 السلة</h2>
+    <button class="close" onclick="closeCart()">×</button>
+  </div>
+
+  <div id="cartItems"></div>
+
+  <div class="total">
+    <span>المجموع</span>
+    <strong><span id="total">0</span> ₺</strong>
+  </div>
+
+  <button class="whatsapp" onclick="sendWhatsApp()">
+    💬 إرسال الطلب عبر واتساب
+  </button>
+
+</div>
+
+<footer>
+© 2026 AVENZO — جميع الحقوق محفوظة
+</footer>
+
+<script>
+
+const PHONE = "905348148132";
+
+let products = JSON.parse(localStorage.getItem("avenzoProducts")) || [
+
+ {
+  id:1,
+  name:"قميص كلاسيكي",
+  price:750,
+  image:"https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=800&q=80"
+ },
+
+ {
+  id:2,
+  name:"طقم أنيق",
+  price:1200,
+  image:"https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=800&q=80"
+ },
+
+ {
+  id:3,
+  name:"مجموعة AVENZO",
+  price:950,
+  image:"https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=800&q=80"
+ }
+
+];
+
+let cart = JSON.parse(localStorage.getItem("avenzoCart")) || [];
+
+function saveProducts(){
+ localStorage.setItem("avenzoProducts",JSON.stringify(products));
+}
+
+function renderProducts(){
+
+ const box=document.getElementById("productsList");
+
+ box.innerHTML="";
+
+ if(products.length===0){
+   box.innerHTML='<div class="empty">لا توجد منتجات حاليًا 🛍️</div>';
+   return;
+ }
+
+ products.forEach(p=>{
+
+   box.innerHTML+=`
+
+   <div class="product">
+
+     <img src="${p.image}">
+
+     <h3>${p.name}</h3>
+
+     <div class="price">
+       ${Number(p.price).toLocaleString()} ₺
+     </div>
+
+     <button class="btn"
+       onclick="addCart(${p.id})">
+       🛒 أضف للسلة
+     </button>
+
+   </div>
+
+   `;
+
+ });
+
+}
+
+function addCart(id){
+
+ const product=products.find(p=>p.id===id);
+
+ if(!product)return;
+
+ const item=cart.find(p=>p.id===id);
+
+ if(item){
+   item.qty++;
+ }else{
+   cart.push({...product,qty:1});
+ }
+
+ saveCart();
+ renderCart();
+ openCart();
+
+}
+
+function saveCart(){
+ localStorage.setItem("avenzoCart",JSON.stringify(cart));
+}
+
+function renderCart(){
+
+ const box=document.getElementById("cartItems");
+
+ box.innerHTML="";
+
+ let total=0;
+ let count=0;
+
+ if(cart.length===0){
+   box.innerHTML='<div class="empty">السلة فارغة 🛍️</div>';
+ }
+
+ cart.forEach((p,i)=>{
+
+   total+=p.price*p.qty;
+   count+=p.qty;
+
+   box.innerHTML+=`
+
+   <div class="item">
+
+     <img src="${p.image}">
+
+     <div class="itemInfo">
+
+       <h4>${p.name}</h4>
+
+       <div class="itemPrice">
+         ${Number(p.price).toLocaleString()} ₺
+       </div>
+
+       <div class="qty">
+
+         <button onclick="plus(${i})">+</button>
+
+         <span>${p.qty}</span>
+
+         <button onclick="minus(${i})">−</button>
+
+         <button class="remove"
+           onclick="removeItem(${i})">
+           🗑️
+         </button>
+
+       </div>
+
+     </div>
+
+   </div>
+
+   `;
+
+ });
+
+ document.getElementById("count").textContent=count;
+ document.getElementById("total").textContent=total.toLocaleString();
+
+}
+
+function plus(i){
+ cart[i].qty++;
+ saveCart();
+ renderCart();
+}
+
+function minus(i){
+
+ if(cart[i].qty>1){
+   cart[i].qty--;
+ }else{
+   cart.splice(i,1);
+ }
+
+ saveCart();
+ renderCart();
+
+}
+
+function removeItem(i){
+ cart.splice(i,1);
+ saveCart();
+ renderCart();
+}
+
+function openCart(){
+ document.getElementById("cart").classList.add("open");
+}
+
+function closeCart(){
+ document.getElementById("cart").classList.remove("open");
+}
+
+function sendWhatsApp(){
+
+ if(cart.length===0){
+   alert("السلة فارغة!");
+   return;
+ }
+
+ let message="🛍️ طلب جديد من AVENZO\n\n";
+ let total=0;
+
+ cart.forEach(p=>{
+
+   let sub=p.price*p.qty;
+   total+=sub;
+
+   message+=
+   "👕 "+p.name+
+   "\nالكمية: "+p.qty+
+   "\nالسعر: "+p.price+" ₺"+
+   "\nالمجموع: "+sub+" ₺\n\n";
+
+ });
+
+ message+="💰 الإجمالي: "+total+" ₺\n\n";
+ message+="📍 أريد تأكيد الطلب.";
+
+ const url=
+ "https://wa.me/"+PHONE+
+ "?text="+encodeURIComponent(message);
+
+ window.open(url,"_blank");
+
+}
+
+renderProducts();
+renderCart();
+
+</script>
+
+</body>
+</html>
